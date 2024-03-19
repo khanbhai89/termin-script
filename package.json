@@ -2,7 +2,8 @@
   "name": "playwright-tests",
   "version": "1.0.0",
   "scripts": {
-    "test": "playwright test"
+    "test": "playwright test",
+    "update:images": "docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/playwright:v1.42.1-jammy /bin/bash -c 'npm install && npx playwright test'"
   },
   "devDependencies": {
     "@playwright/test": "^1.42.0"
