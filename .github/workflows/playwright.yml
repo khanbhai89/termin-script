@@ -20,6 +20,7 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test
     - name: Send Telegram Message
+      if: failure() 
       uses: cbrgm/telegram-github-action@v1
       with:
         token: ${{ secrets.TELEGRAM_TOKEN }}
