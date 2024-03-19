@@ -4,16 +4,12 @@ test('page screenshot comparison', async ({ page }) => {
   // Navigate to the URL
   await page.goto('https://www22.muenchen.de/kvr/termin/index.php?cts=');
 
-  // Take a screenshot of the current state of the page
-  const currentScreenshot = await page.screenshot();
-
-  // Compare the screenshot with an expected one
-  // The expect API for screenshots allows you to specify comparison options.
-  // You might need to have an expected screenshot already saved in your test directory.
-  // The path to this screenshot is relative to the test file.
-  await expect(currentScreenshot).toHaveScreenshot('expected-screenshot.png', {
-    // Options for comparison (these are optional and can be adjusted based on your needs)
-    threshold: 0.2, // Allow a small margin of error in the screenshot comparison
-    // You can specify more options here based on your comparison needs
-  });
+  await page.click('text=Meldeangelegenheiten ');
+  await page.selectOption(`[name='CASETYPES[An- oder Ummeldung - Einzelperson]']`, '1');
+  await page.click('input.WEB_APPOINT_FORWARDBUTTON');
+  await expect(page).toHaveScreenshot('./pageImages/screenshot1.png');
+  await page.locator('.navButton').nth(1).click();
+  await expect(page).toHaveScreenshot('./pageImages/screenshot2.png');
+  await page.locator('.navButton').nth(3).click();
+  await expect(page).toHaveScreenshot('./pageImages/screenshot3.png');
 });
