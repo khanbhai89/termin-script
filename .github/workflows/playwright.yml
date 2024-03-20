@@ -13,26 +13,42 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Setup cache for node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
       - uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
+          
       - name: Install dependencies
         run: npm ci
+        
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
+        
       - name: Run Playwright tests
         run: npx playwright test --reporter=junit
+        
       - name: Extract failed tests
         run: |
-          grep -oP '<testcase.*?name="\K.*?(?=")' playwright-report/results.xml | grep -B 1 '<failure' > failed_tests.txt
+          grep -oP '<testcase.*?name="\K.*?(?=")' test-results/results.xml | grep -B 1 '<failure' > failed_tests.txt
           if [ -s failed_tests.txt ]; then
             echo "FAILED_TESTS=$(<failed_tests.txt)" >> $GITHUB_ENV
           else
             echo "FAILED_TESTS=None" >> $GITHUB_ENV
           fi
+          
       - name: Display failed tests
         if: env.FAILED_TESTS != 'None'
         run: cat failed_tests.txt
+        
       - name: Send Telegram Message
         if: failure()
         uses: cbrgm/telegram-github-action@v1
@@ -40,6 +56,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           message: "New Appointment Found"
+          
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
