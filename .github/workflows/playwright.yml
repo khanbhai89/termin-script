@@ -22,18 +22,18 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-          
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
-        
+
       - name: Run Playwright tests and capture output
         run: npx playwright test --reporter=list > test_output.txt || echo "TESTS_FAILED=true" >> $GITHUB_ENV
 
@@ -50,4 +50,4 @@ jobs:
         with:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          message: "Test failures detected in Munich Termin Appointment workflow: ${{ env.FAILED_TEST_NAMES }}"
+          message: "${{ env.FAILED_TEST_NAMES }}"

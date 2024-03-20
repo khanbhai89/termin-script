@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test('test for Munich Termin @munich', async ({ page }) => {
+test('Appointment available for @munich', async ({ page }) => {
   // Navigate to the URL
   await page.goto('https://www22.muenchen.de/kvr/termin/index.php?cts=');
 
@@ -18,7 +18,7 @@ test('test for Munich Termin @munich', async ({ page }) => {
   await expect(page).toHaveScreenshot({path: './pageImages/screenshot3.png', fullPage: true, mask: [maskedElement]});
 });
 
-test('test for ingolstadt termin @ingolstadt', async ({ page }) => {
+test('Appointment available for @ingolstadt', async ({ page }) => {
 
   await page.goto('https://www.ingolstadt.de/tevisweb/?rs');
 
@@ -44,14 +44,13 @@ test('test for ingolstadt termin @ingolstadt', async ({ page }) => {
   
     const extractedDate = new Date(year, month - 1, day, hour, minute);
   
-    const comparisonDate = new Date(2024, 7, 9); 
+    const comparisonDate = new Date(2024, 4, 9); 
   
     if (extractedDate < comparisonDate) {
       console.log("The date available is", extractedDate);
       throw new Error("The extracted date and time are before May 9th, 2024.");
     } else {
       console.log("The date available is", extractedDate);
-      console.log("The date is on or after May 9th, 2024.");
     }
   } else {
     console.log("No date and time found in the string.");
