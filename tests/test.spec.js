@@ -47,8 +47,10 @@ test('test for ingolstadt termin @ingolstadt', async ({ page }) => {
     const comparisonDate = new Date(2024, 4, 9); 
   
     if (extractedDate < comparisonDate) {
+      console.log("The date available is", extractedDate);
       throw new Error("The extracted date and time are before May 9th, 2024.");
     } else {
+      console.log("The date available is", extractedDate);
       console.log("The date is on or after May 9th, 2024.");
     }
   } else {
