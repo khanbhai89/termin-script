@@ -22,52 +22,32 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/ms-playwright/
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
+      
       - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
-
+          
       - name: Install dependencies
         run: npm ci
-
+        
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
         
       - name: Run Playwright tests and capture output
         run: npx playwright test --reporter=list > test_output.txt || echo "TESTS_FAILED=true" >> $GITHUB_ENV
-        
-      - name: Extract failed test names
+
+      - name: Extract names of failed tests
         if: env.TESTS_FAILED == 'true'
         run: |
-          grep '✘' test_output.txt | awk '{print $2}' > failed_test_names.txt
-        
-      - name: Upload failed test names as an artifact
-        if: env.TESTS_FAILED == 'true'
-        uses: actions/upload-artifact@v2
-        with:
-          name: failed-test-names
-          path: failed_test_names.txt
-          
-      - name: Log failed test names
-        if: env.TESTS_FAILED == 'true'
-        run: |
-          echo "Failed Test Names:"
-          cat failed_test_names.txt
-          
-      - name: Send Telegram Message on Failure
+          grep '✘' test_output.txt | awk '{for (i=3; i<NF; i++) printf $i " "; print $NF}' > failed_tests_names.txt
+          FAILED_TESTS=$(cat failed_tests_names.txt | tr '\n' ', ' | sed 's/, $/\n/')
+          echo "FAILED_TEST_NAMES=$FAILED_TESTS" >> $GITHUB_ENV
+
+      - name: Send Telegram Message with Failed Test Names
         if: env.TESTS_FAILED == 'true'
         uses: cbrgm/telegram-github-action@v1
         with:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          message: "A test failure occurred. Check the details in the GitHub Actions artifacts."
+          message: "Test failures detected in Munich Termin Appointment workflow: ${{ env.FAILED_TEST_NAMES }}"
