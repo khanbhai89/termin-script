@@ -35,21 +35,23 @@ jobs:
         run: npx playwright install chromium --with-deps
         
       - name: Run Playwright tests and capture output
-        run: npx playwright test --reporter=line | tee test_output.txt
+        run: npx playwright test --reporter=list | tee test_output.txt
         
-      - name: Extract failed tests
+      - name: Extract failed tests and reasons
         if: failure()
         run: |
-          grep '✘' test_output.txt > failed_tests.txt
-          if [ -s failed_tests.txt ]; then
-            echo "FAILED_TESTS=failed" >> $GITHUB_ENV
+          grep -A 1 '✘' test_output.txt > failed_tests_summary.txt
+          if [ -s failed_tests_summary.txt ]; then
+            echo "TEST_FAILURE_SUMMARY=$(<failed_tests_summary.txt)" >> $GITHUB_ENV
           else
-            echo "FAILED_TESTS=passed" >> $GITHUB_ENV
+            echo "TEST_FAILURE_SUMMARY=None" >> $GITHUB_ENV
           fi
           
-      - name: Display failed tests
-        if: env.FAILED_TESTS != 'None' && failure()
-        run: cat failed_tests.txt
+      - name: Display failed test summary
+        if: env.TEST_FAILURE_SUMMARY != 'None' && failure()
+        run: |
+            echo "Failed Test Summary:"
+            echo "$TEST_FAILURE_SUMMARY"
         
       - name: Send Telegram Message
         if: failure()

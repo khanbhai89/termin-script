@@ -4,7 +4,4 @@ module.exports = {
   use: {
     headless: true,
   },
-  reporter: [
-    ['junit', { outputFile: 'test-results/results.xml' }]
-  ],
 };
