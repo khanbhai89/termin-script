@@ -37,6 +37,7 @@ jobs:
         run: npx playwright test --reporter=junit
         
       - name: Extract failed tests
+        if: failure()
         run: |
           grep -oP '<testcase.*?name="\K.*?(?=")' ./test-results/results.xml | grep -B 1 '<failure' > failed_tests.txt
           if [ -s failed_tests.txt ]; then
@@ -46,7 +47,7 @@ jobs:
           fi
           
       - name: Display failed tests
-        if: env.FAILED_TESTS != 'None'
+        if: env.FAILED_TESTS != 'None' && failure()
         run: cat failed_tests.txt
         
       - name: Send Telegram Message
