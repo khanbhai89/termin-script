@@ -34,17 +34,17 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
         
-      - name: Run Playwright tests
-        run: npx playwright test
+      - name: Run Playwright tests and capture output
+        run: npx playwright test --reporter=line | tee test_output.txt
         
       - name: Extract failed tests
         if: failure()
         run: |
-          grep -oP '<testcase.*?name="\K.*?(?=")' ./test-results/results.xml | grep -B 1 '<failure' > failed_tests.txt
+          grep '✘' test_output.txt > failed_tests.txt
           if [ -s failed_tests.txt ]; then
-            echo "FAILED_TESTS=$(<failed_tests.txt)" >> $GITHUB_ENV
+            echo "FAILED_TESTS=failed" >> $GITHUB_ENV
           else
-            echo "FAILED_TESTS=None" >> $GITHUB_ENV
+            echo "FAILED_TESTS=passed" >> $GITHUB_ENV
           fi
           
       - name: Display failed tests
