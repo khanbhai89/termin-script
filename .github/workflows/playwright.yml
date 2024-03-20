@@ -35,7 +35,8 @@ jobs:
         run: npx playwright install chromium --with-deps
         
       - name: Run Playwright tests and capture output
-        run: npx playwright test --reporter=list | tee test_output.txt
+        run: |
+          npx playwright test --reporter=list || exit 1
         
       - name: Extract failed tests and reasons
         if: failure()
