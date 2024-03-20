@@ -44,7 +44,7 @@ test('test for ingolstadt termin @ingolstadt', async ({ page }) => {
   
     const extractedDate = new Date(year, month - 1, day, hour, minute);
   
-    const comparisonDate = new Date(2024, 4, 9); 
+    const comparisonDate = new Date(2024, 7, 9); 
   
     if (extractedDate < comparisonDate) {
       console.log("The date available is", extractedDate);
