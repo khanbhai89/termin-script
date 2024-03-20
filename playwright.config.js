@@ -1,7 +1,10 @@
 // playwright.config.js
 module.exports = {
-  testDir: './tests', // Update this path
+  testDir: './tests',
   use: {
-    headless: true
-  }
+    headless: true,
+  },
+  reporter: [
+    ['junit', { outputFile: 'test-results/results.xml' }]
+  ],
 };
