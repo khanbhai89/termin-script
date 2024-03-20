@@ -35,36 +35,23 @@ jobs:
         run: npx playwright install chromium --with-deps
         
       - name: Run Playwright tests and capture output
-        run: |
-          npx playwright test --reporter=list || exit 1
+        run: npx playwright test --reporter=list > test_output.txt || echo "TESTS_FAILED=true" >> $GITHUB_ENV
         
-      - name: Extract failed tests and reasons
-        if: failure()
-        run: |
-          grep -A 1 '✘' test_output.txt > failed_tests_summary.txt
-          if [ -s failed_tests_summary.txt ]; then
-            echo "TEST_FAILURE_SUMMARY=$(<failed_tests_summary.txt)" >> $GITHUB_ENV
-          else
-            echo "TEST_FAILURE_SUMMARY=None" >> $GITHUB_ENV
-          fi
+      - name: Upload test output as artifact (for both pass and fail)
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-output
+          path: test_output.txt
+          retention-days: 1
           
-      - name: Display failed test summary
-        if: env.TEST_FAILURE_SUMMARY != 'None' && failure()
-        run: |
-            echo "Failed Test Summary:"
-            echo "$TEST_FAILURE_SUMMARY"
+      - name: Display failed test output
+        if: env.TESTS_FAILED == 'true'
+        run: cat test_output.txt
         
-      - name: Send Telegram Message
-        if: failure()
+      - name: Send Telegram Message on Failure
+        if: env.TESTS_FAILED == 'true'
         uses: cbrgm/telegram-github-action@v1
         with:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           message: "New Appointment Found"
-          
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-report
-          path: ./test-results
-          retention-days: 30
