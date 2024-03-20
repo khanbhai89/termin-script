@@ -8,7 +8,7 @@ on:
     # Runs every 10 minutes
     - cron: "*/10 * * * *"
 jobs:
-  test:
+  termin-script:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
@@ -22,7 +22,7 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-              
+
       - name: Cache Playwright browsers
         uses: actions/cache@v3
         with:
@@ -31,7 +31,6 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
-
 
       - uses: actions/setup-node@v4
         with:
@@ -42,6 +41,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
 
       - name: Run Playwright tests and capture output
