@@ -37,16 +37,22 @@ jobs:
       - name: Run Playwright tests and capture output
         run: npx playwright test --reporter=list > test_output.txt || echo "TESTS_FAILED=true" >> $GITHUB_ENV
         
-      - name: Upload test output as artifact (for both pass and fail)
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-test-output
-          path: test_output.txt
-          retention-days: 1
-          
-      - name: Display failed test output
+      - name: Extract failed test details
         if: env.TESTS_FAILED == 'true'
-        run: cat test_output.txt
+        run: |
+          echo "Failed Test Details:" > failed_test_details.txt
+          grep -A 10 '✘' test_output.txt | grep -B 10 'failed' >> failed_test_details.txt
+        
+      - name: Upload failed test details as an artifact
+        if: env.TESTS_FAILED == 'true'
+        uses: actions/upload-artifact@v2
+        with:
+          name: failed-test-details
+          path: failed_test_details.txt
+          
+      - name: Log failed test details
+        if: env.TESTS_FAILED == 'true'
+        run: cat failed_test_details.txt
         
       - name: Send Telegram Message on Failure
         if: env.TESTS_FAILED == 'true'
@@ -54,4 +60,4 @@ jobs:
         with:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          message: "New Appointment Found"
+          message: "New Appointment found."
