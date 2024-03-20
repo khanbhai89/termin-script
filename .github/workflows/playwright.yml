@@ -17,7 +17,8 @@ jobs:
       - name: Setup cache for node modules
         uses: actions/cache@v3
         with:
-          path: ~/.npm
+          path: |
+            node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
@@ -34,7 +35,7 @@ jobs:
         run: npx playwright install chromium --with-deps
         
       - name: Run Playwright tests
-        run: npx playwright test --reporter=junit
+        run: npx playwright test
         
       - name: Extract failed tests
         if: failure()
