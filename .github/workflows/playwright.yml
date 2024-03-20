@@ -37,27 +37,28 @@ jobs:
       - name: Run Playwright tests and capture output
         run: npx playwright test --reporter=list > test_output.txt || echo "TESTS_FAILED=true" >> $GITHUB_ENV
         
-      - name: Extract failed test details
+      - name: Extract failed test names
         if: env.TESTS_FAILED == 'true'
         run: |
-          echo "Failed Test Details:" > failed_test_details.txt
-          grep -A 10 '✘' test_output.txt | grep -B 10 'failed' >> failed_test_details.txt
+          grep '✘' test_output.txt | awk '{print $2}' > failed_test_names.txt
         
-      - name: Upload failed test details as an artifact
+      - name: Upload failed test names as an artifact
         if: env.TESTS_FAILED == 'true'
         uses: actions/upload-artifact@v2
         with:
-          name: failed-test-details
-          path: failed_test_details.txt
+          name: failed-test-names
+          path: failed_test_names.txt
           
-      - name: Log failed test details
+      - name: Log failed test names
         if: env.TESTS_FAILED == 'true'
-        run: cat failed_test_details.txt
-        
+        run: |
+          echo "Failed Test Names:"
+          cat failed_test_names.txt
+          
       - name: Send Telegram Message on Failure
         if: env.TESTS_FAILED == 'true'
         uses: cbrgm/telegram-github-action@v1
         with:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          message: "New Appointment found."
+          message: "A test failure occurred. Check the details in the GitHub Actions artifacts."
