@@ -72,52 +72,61 @@ test("Appointment available for @ingolstadt", async ({ page }) => {
   }
 });
 
-test(
-  "Create Karachi Consulate Appointment @karachi",
-  async ({ page }) => {
-    await page.goto(
-      "https://service2.diplo.de/rktermin/extern/appointment_showMonth.do?locationCode=kara&realmId=772&categoryId=1417"
-    );
+test.describe(() => {
+  // All tests in this describe group will get 2 retry attempts.
+  test.describe.configure({ retries: 2 });
 
-    let attempts = 0;
-    const maxAttempts = 4;
-    let success = false;
+  test(
+    "Create Karachi Consulate Appointment @karachi",
+    async ({ page }) => {
+      await page.goto(
+        "https://service2.diplo.de/rktermin/extern/appointment_showMonth.do?locationCode=kara&realmId=772&categoryId=1417"
+      );
 
-    while (attempts < maxAttempts && !success) {
-      try {
-        const captcha = await page.locator("captcha");
-        const captchaLocator = await captcha
-          .locator("div")
-          .getAttribute("style");
-        const regex = /data:image\/jpg;base64,(.*?)'\)/;
-        const matches = captchaLocator.match(regex);
+      let attempts = 0;
+      const maxAttempts = 4;
+      let success = false;
 
-        const base64Data = matches[1];
-        ac.setAPIKey(process.env.API_KEY);
+      while (attempts < maxAttempts && !success) {
+        try {
+          const captcha = await page.locator("captcha");
+          const captchaLocator = await captcha
+            .locator("div")
+            .getAttribute("style");
+          const regex = /data:image\/jpg;base64,(.*?)'\)/;
+          const matches = captchaLocator.match(regex);
 
-        const text = await ac.solveImage(base64Data, true);
+          const base64Data = matches[1];
+          ac.setAPIKey(process.env.API_KEY);
+          console.log(base64Data);
+          const text = await ac.solveImage(base64Data, true);
 
-        await page.locator("#appointment_captcha_month_captchaText").fill(text);
-        await page
-          .locator("#appointment_captcha_month_appointment_showMonth")
-          .click();
+          await page
+            .locator("#appointment_captcha_month_captchaText")
+            .fill(text);
+          await page
+            .locator("#appointment_captcha_month_appointment_showMonth")
+            .click();
 
-        await await page
-          .locator("#content > div.wrapper > h2:nth-child(3) > a:nth-child(2)")
-          .waitFor({ state: "visible" });
-        // If the above line does not throw, we assume success
-        success = true;
-      } catch (error) {
-        attempts++;
-        console.log(`Attempt ${attempts} failed; retrying...`);
+          await await page
+            .locator(
+              "#content > div.wrapperd > h2:nth-child(3) > a:nth-child(2)"
+            )
+            .waitFor({ state: "visible" });
+          // If the above line does not throw, we assume success
+          success = true;
+        } catch (error) {
+          attempts++;
+          console.log(`Attempt ${attempts} failed; retrying...`);
+        }
       }
-    }
-    await expect(page).toHaveScreenshot();
+      await expect(page).toHaveScreenshot();
 
-    await page
-      .locator("#content > div.wrapper > h2:nth-child(3) > a:nth-child(2)")
-      .click();
-    await expect(page).toHaveScreenshot();
-  },
-  { retries: 3 }
-);
+      await page
+        .locator("#content > div.wrapper > h2:nth-child(3) > a:nth-child(2)")
+        .click();
+      await expect(page).toHaveScreenshot();
+    },
+    { retries: 3 }
+  );
+});
