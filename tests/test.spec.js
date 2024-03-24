@@ -110,7 +110,7 @@ test.describe(() => {
 
           await await page
             .locator(
-              "#content > div.wrapperd > h2:nth-child(3) > a:nth-child(2)"
+              "#content > div.wrapper > h2:nth-child(3) > a:nth-child(2)"
             )
             .waitFor({ state: "visible" });
           // If the above line does not throw, we assume success
