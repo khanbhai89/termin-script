@@ -77,5 +77,4 @@ jobs:
         with:
           name: test-results
           path: test-results/
-          # Optional: if you want the artifact to be retained for more than the default 90 days, specify the retention period (in days)
           retention-days: 5

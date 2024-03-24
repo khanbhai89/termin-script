@@ -78,34 +78,46 @@ test(
     await page.goto(
       "https://service2.diplo.de/rktermin/extern/appointment_showMonth.do?locationCode=kara&realmId=772&categoryId=1417"
     );
-    await page.screenshot();
-    const captcha = await page.locator("captcha");
-    const captchaLocator = await captcha.locator("div").getAttribute("style");
-    //console.log(captchaLocator);
-    const regex = /data:image\/jpg;base64,(.*?)'\)/;
-    const matches = captchaLocator.match(regex);
 
-    if (matches && matches.length > 1) {
-      const base64Data = matches[1];
-      ac.setAPIKey(process.env.API_KEY);
+    let attempts = 0;
+    const maxAttempts = 4;
+    let success = false;
 
-      const text = await ac.solveImage(base64Data, true);
-      console.log(text);
+    while (attempts < maxAttempts && !success) {
+      try {
+        const captcha = await page.locator("captcha");
+        const captchaLocator = await captcha
+          .locator("div")
+          .getAttribute("style");
+        const regex = /data:image\/jpg;base64,(.*?)'\)/;
+        const matches = captchaLocator.match(regex);
 
-      await page.locator("#appointment_captcha_month_captchaText").fill(text);
-      await page
-        .locator("#appointment_captcha_month_appointment_showMonth")
-        .click();
+        const base64Data = matches[1];
+        ac.setAPIKey(process.env.API_KEY);
 
-      await expect(page).toHaveScreenshot();
+        const text = await ac.solveImage(base64Data, true);
 
-      await page
-        .locator("#content > div.wrapper > h2:nth-child(3) > a:nth-child(2)")
-        .click();
-      await expect(page).toHaveScreenshot();
-    } else {
-      console.log("No base64 image data found.");
+        await page.locator("#appointment_captcha_month_captchaText").fill(text);
+        await page
+          .locator("#appointment_captcha_month_appointment_showMonth")
+          .click();
+
+        await await page
+          .locator("#content > div.wrapper > h2:nth-child(3) > a:nth-child(2)")
+          .waitFor({ state: "visible" });
+        // If the above line does not throw, we assume success
+        success = true;
+      } catch (error) {
+        attempts++;
+        console.log(`Attempt ${attempts} failed; retrying...`);
+      }
     }
+    await expect(page).toHaveScreenshot();
+
+    await page
+      .locator("#content > div.wrapper > h2:nth-child(3) > a:nth-child(2)")
+      .click();
+    await expect(page).toHaveScreenshot();
   },
   { retries: 3 }
 );
