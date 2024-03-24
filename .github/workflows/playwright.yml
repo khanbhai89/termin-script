@@ -7,6 +7,7 @@ on:
   schedule:
     # Runs every 10 minutes
     - cron: "*/10 * * * *"
+
 jobs:
   termin-script:
     timeout-minutes: 60
@@ -44,8 +45,17 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
 
-      - name: Run Playwright tests and capture output
-        run: npx playwright test --reporter=list > test_output.txt || echo "TESTS_FAILED=true" >> $GITHUB_ENV
+      - name: Setup Xvfb
+        run: |
+          sudo apt-get update && sudo apt-get install -y xvfb
+          sudo Xvfb :99 -screen 0 1280x720x16 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: Run Playwright tests in headful mode with Xvfb and capture output
+        run: |
+          npx playwright test --headed --reporter=list > test_output.txt || echo "TESTS_FAILED=true" >> $GITHUB_ENV
+        env:
+          API_KEY: ${{ secrets.CAPTCHA_API_KEY }}
 
       - name: Extract names of failed tests
         if: env.TESTS_FAILED == 'true'
