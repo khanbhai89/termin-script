@@ -6,7 +6,7 @@ on:
     branches: [main, master]
   schedule:
     # Runs every 10 minutes
-    - cron: "*/10 * * * *"
+    - cron: "*/3 * * * *"
 
 jobs:
   termin-script:

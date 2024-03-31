@@ -1,7 +1,7 @@
 const { test, expect } = require("@playwright/test");
 const ac = require("@antiadmin/anticaptchaofficial");
 
-test("Appointment available for @munich", async ({ page }) => {
+test.skip("Appointment available for @munich", async ({ page }) => {
   // Navigate to the URL
   await page.goto("https://www22.muenchen.de/kvr/termin/index.php?cts=");
 
@@ -34,7 +34,7 @@ test("Appointment available for @munich", async ({ page }) => {
   });
 });
 
-test("Appointment available for @ingolstadt", async ({ page }) => {
+test.skip("Appointment available for @ingolstadt", async ({ page }) => {
   await page.goto("https://www.ingolstadt.de/tevisweb/?rs");
 
   await page.click("#buttonfunktionseinheit-5");
