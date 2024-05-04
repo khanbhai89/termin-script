@@ -77,7 +77,65 @@ test.describe(() => {
   test.describe.configure({ retries: 2 });
 
   test(
-    "Create Karachi Consulate Appointment @karachi",
+    "Create Karachi Consulate Appointment Schengen @karachi",
+    async ({ page }) => {
+      await page.goto(
+        "https://service2.diplo.de/rktermin/extern/appointment_showMonth.do?locationCode=kara&realmId=771&categoryId=1416"
+      );
+
+      let attempts = 0;
+      const maxAttempts = 4;
+      let success = false;
+
+      while (attempts < maxAttempts && !success) {
+        try {
+
+          const captcha = await page.locator("captcha");
+          const captchaLocator = await captcha
+            .locator("div")
+            .getAttribute("style");
+          const regex = /data:image\/jpg;base64,(.*?)'\)/;
+          const matches = captchaLocator.match(regex);
+
+          const base64Data = matches[1];
+          ac.setAPIKey(process.env.API_KEY);
+          console.log(base64Data);
+          const text = await ac.solveImage(base64Data, true);
+
+          await page
+            .locator("#appointment_captcha_month_captchaText")
+            .fill(text);
+          console.log("Filled captcha");
+          console.log(text);
+
+          await page
+            .locator("#appointment_captcha_month_appointment_showMonth")
+            .click();
+
+          await await page
+            .locator(
+              "#content > div.wrapper > h2:nth-child(3) > a:nth-child(2)"
+            )
+            .waitFor({ state: "visible" });
+          // If the above line does not throw, we assume success
+          success = true;
+        } catch (error) {
+          attempts++;
+          console.log(`Attempt ${attempts} failed; retrying...`);
+        }
+      }
+      await expect(page).toHaveScreenshot();
+
+      await page
+        .locator("#content > div.wrapper > h2:nth-child(3) > a:nth-child(2)")
+        .click();
+      await expect(page).toHaveScreenshot();
+    },
+    { retries: 3 }
+  );
+
+  test(
+    "Create Karachi Consulate Appointment FRV @karachi",
     async ({ page }) => {
       await page.goto(
         "https://service2.diplo.de/rktermin/extern/appointment_showMonth.do?locationCode=kara&realmId=772&categoryId=1417"

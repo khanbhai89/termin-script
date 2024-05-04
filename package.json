@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "scripts": {
     "test": "playwright test",
-    "update:images": "docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/playwright:v1.42.1-jammy /bin/bash -c 'npm install && npx playwright test'"
+    "update:images": "docker run --rm -v $(pwd):/app -w /app --privileged mcr.microsoft.com/playwright:v1.43.1-jammy /bin/bash -c 'apt-get update && apt-get install -y xvfb && xvfb-run -a npm install && xvfb-run -a npx playwright test --headed'"
   },
   "devDependencies": {
-    "@playwright/test": "^1.42.0"
+    "@playwright/test": "^1.43.1"
   },
   "dependencies": {
     "@antiadmin/anticaptchaofficial": "^1.0.45"
